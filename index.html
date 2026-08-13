@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HH Goa 2026 — Frame Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@700;900&display=swap');
+
+  :root {
+    --green-deep: #1a5c2a;
+    --green-mid: #2a7a3a;
+    --yellow: #f5c800;
+    --yellow-dark: #d4a800;
+    --pink: #e8198b;
+    --pink-dark: #c01070;
+    --white: #ffffff;
+    --off-white: #fdf8ee;
+    --text: #1a1a1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--green-deep);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--yellow), var(--pink), var(--yellow), transparent);
+    margin-top: 1.5rem;
+  }
+  .header-goa {
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    font-size: clamp(2.2rem, 8vw, 3.5rem);
+    color: var(--yellow);
+    letter-spacing: -1px;
+    line-height: 1;
+    text-shadow: 3px 3px 0 var(--pink), 5px 5px 0 rgba(0,0,0,0.2);
+  }
+  .header-sub {
+    font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+    letter-spacing: 0.25em;
+    color: var(--yellow);
+    opacity: 0.85;
+    margin-top: 0.3rem;
+    text-transform: uppercase;
+  }
+  .header-date {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1rem, 3.5vw, 1.4rem);
+    color: var(--pink);
+    letter-spacing: 0.15em;
+    margin-top: 0.2rem;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem 0;
+  }
+  .tab {
+    padding: 0.6rem 1.4rem;
+    border-radius: 2rem;
+    border: 2px solid var(--yellow);
+    background: transparent;
+    color: var(--yellow);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .tab.active {
+    background: var(--yellow);
+    color: var(--green-deep);
+  }
+  .tab:hover:not(.active) {
+    background: rgba(245,200,0,0.15);
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  @media (min-width: 640px) {
+    .panel.active {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+    .controls-col { width: 340px; flex-shrink: 0; }
+    .preview-col { flex: 1; }
+  }
+
+  /* ── CARD / INPUT SECTIONS ── */
+  .card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(245,200,0,0.25);
+    border-radius: 1rem;
+    padding: 1.25rem;
+  }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    color: var(--yellow);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--pink);
+    border-radius: 50%;
+  }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone {
+    border: 2px dashed rgba(245,200,0,0.5);
+    border-radius: 0.75rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: rgba(245,200,0,0.04);
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--yellow);
+    background: rgba(245,200,0,0.1);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .upload-text { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+  .upload-text strong { color: var(--yellow); }
+
+  /* ── FORM FIELDS ── */
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 0.35rem;
+  }
+  input[type="text"], select, textarea {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border-radius: 0.5rem;
+    border: 1.5px solid rgba(245,200,0,0.3);
+    background: rgba(0,0,0,0.3);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    margin-bottom: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--yellow); }
+  select option { background: #1a3a20; }
+
+  /* ── GENERATE BTN ── */
+  .btn-generate {
+    width: 100%;
+    padding: 0.9rem;
+    background: var(--yellow);
+    color: var(--green-deep);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    border: none;
+    border-radius: 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-generate:hover { background: #ffe033; transform: translateY(-1px); }
+  .btn-generate:active { transform: translateY(0); }
+
+  /* ── PREVIEW AREA ── */
+  .preview-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  #canvas-container {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 2px rgba(245,200,0,0.3);
+    background: var(--green-deep);
+  }
+  canvas { display: block; width: 100%; height: auto; }
+
+  .placeholder-canvas {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.85rem;
+    min-height: 220px;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.02),
+      rgba(255,255,255,0.02) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+  }
+  .placeholder-canvas .ph-icon { font-size: 3rem; opacity: 0.4; }
+
+  /* ── ACTION BUTTONS ── */
+  .action-btns {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 500px;
+  }
+  .btn-action {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 0.65rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border: 2px solid;
+    transition: all 0.2s;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .btn-download {
+    background: var(--pink);
+    border-color: var(--pink);
+    color: white;
+  }
+  .btn-download:hover { background: var(--pink-dark); border-color: var(--pink-dark); }
+  .btn-share {
+    background: transparent;
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+  .btn-share:hover { background: rgba(245,200,0,0.15); }
+
+  .hidden { display: none !important; }
+
+  /* ── ORNAMENTAL DIVIDER ── */
+  .ornament {
+    text-align: center;
+    color: var(--yellow);
+    font-size: 1.2rem;
+    opacity: 0.4;
+    letter-spacing: 0.5em;
+    margin: 0.25rem 0;
+  }
+
+  /* ── LOADING SPINNER ── */
+  .spinner-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: var(--yellow);
+    font-size: 0.9rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(245,200,0,0.3);
+    border-top-color: var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(200%);
+    background: var(--yellow);
+    color: var(--green-deep);
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-goa">गोवा</div>
+  <div class="header-sub">Hacker House · Goa, India</div>
+  <div class="header-date">28 – 31 Oct 2026</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('pfp')">🖼 PFP Frame</button>
+  <button class="tab" onclick="switchTab('id')">🪪 Builder ID</button>
+</div>
+
+<main>
+
+  <!-- ═══ PFP PANEL ═══ -->
+  <div class="panel active" id="panel-pfp">
+    <div class="controls-col">
+      <div class="card">
+        <div class="card-title">Upload Your Photo</div>
+        <div class="upload-zone" id="upload-pfp" ondragover="ev.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'pfp')">
+          <input type="file" accept="image/*,.heic,.heif" onchange="handleFile(this.files[0],'pfp')">
+          <div class="upload-icon">📸</div>
+          <div class="upload-text"><strong>Tap to upload</strong> or drag & drop<br>JPG · PNG · HEIC · WebP</div>
+        </div>
+
+        <div class="ornament" style="margin: 1rem 0;">✦ ✦ ✦</div>
+
+        <label>Frame Style</label>
+        <select id="pfp-style" onchange="renderPFP()">
+          <option value="banner">Banner Frame (horizontal)</option>
+          <option value="circle">Circle Frame (X PFP)</option>
+        </select>
+
+        <button class="btn-generate" onclick="renderPFP()">Generate Frame ✦</button>
+      </div>
+    </div>
+
+    <div class="preview-col">
+      <div class="preview-wrap">
+        <div id="canvas-container">
+          <div class="placeholder-canvas" id="placeholder-pfp">
+            <div class="ph-icon">🌴</div>
+            <div>Upload a photo to generate your HH Goa frame</div>
+          </div>
+          <canvas id="canvas-pfp" class="hidden"></canvas>
+        </div>
+        <div class="action-btns hidden" id="pfp-actions">
+          <button class="btn-action btn-download" onclick="downloadCanvas('pfp')">⬇ Download</button>
+          <button class="btn-action btn-share" onclick="shareToX('pfp')">𝕏 Share to X</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ID PANEL ═══ -->
+  <div class="panel" id="panel-id">
+    <div class="controls-col">
+      <div class="card">
+        <div class="card-title">Upload Your Photo</div>
+        <div class="upload-zone" id="upload-id" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'id')">
+          <input type="file" accept="image/*,.heic,.heif" onchange="handleFile(this.files[0],'id')">
+          <div class="upload-icon">📸</div>
+          <div class="upload-text"><strong>Tap to upload</strong> or drag & drop</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Your Details</div>
+        <label>Name</label>
+        <input type="text" id="id-name" placeholder="Your name" oninput="scheduleIDRender()">
+
+        <label>Stack / Role</label>
+        <select id="id-role" onchange="scheduleIDRender()">
+          <option>Full Stack Dev</option>
+          <option>Frontend Dev</option>
+          <option>Backend Dev</option>
+          <option>AI / ML Engineer</option>
+          <option>Product Designer</option>
+          <option>Founder</option>
+          <option>Hacker</option>
+          <option>DevRel</option>
+          <option>Researcher</option>
+          <option>Growth Hacker</option>
+          <option>Web3 Builder</option>
+          <option>Indie Maker</option>
+        </select>
+
+        <label>Currently Building</label>
+        <input type="text" id="id-building" placeholder="e.g. AI agents, DeFi protocol…" oninput="scheduleIDRender()">
+
+        <label>Superpower</label>
+        <input type="text" id="id-superpower" placeholder="e.g. ships 3am, ships in prod…" oninput="scheduleIDRender()">
+
+        <button class="btn-generate" onclick="renderID()">Generate ID Card ✦</button>
+      </div>
+    </div>
+
+    <div class="preview-col">
+      <div class="preview-wrap">
+        <div id="canvas-container-id">
+          <div class="placeholder-canvas" id="placeholder-id">
+            <div class="ph-icon">🌴</div>
+            <div>Fill in your details & upload a photo</div>
+          </div>
+          <canvas id="canvas-id" class="hidden"></canvas>
+        </div>
+        <div class="action-btns hidden" id="id-actions">
+          <button class="btn-action btn-download" onclick="downloadCanvas('id')">⬇ Download</button>
+          <button class="btn-action btn-share" onclick="shareToX('id')">𝕏 Share to X</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+const state = {
+  pfp: { img: null, rendered: false },
+  id:  { img: null, rendered: false },
+};
+
+let idRenderTimer = null;
+
+// ── Tab switching ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['pfp','id'][i]===tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+// ── File handling ──
+function handleDrop(ev, type) {
+  ev.preventDefault();
+  document.getElementById('upload-'+type).classList.remove('drag-over');
+  const file = ev.dataTransfer.files[0];
+  if (file) handleFile(file, type);
+}
+
+function handleFile(file, type) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      state[type].img = img;
+      if (type === 'pfp') renderPFP();
+      else renderID();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function scheduleIDRender() {
+  clearTimeout(idRenderTimer);
+  idRenderTimer = setTimeout(renderID, 400);
+}
+
+// ═══════════════════════════════════
+// ── PFP FRAME RENDERER ──
+// ═══════════════════════════════════
+function renderPFP() {
+  const img = state.pfp.img;
+  const style = document.getElementById('pfp-style').value;
+  const canvas = document.getElementById('canvas-pfp');
+  const placeholder = document.getElementById('placeholder-pfp');
+  const actions = document.getElementById('pfp-actions');
+
+  if (!img) { showToast('Upload a photo first!'); return; }
+
+  const SIZE = 800;
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#1a5c2a';
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  if (style === 'circle') {
+    drawCircleFrame(ctx, img, SIZE);
+  } else {
+    drawBannerFrame(ctx, img, SIZE);
+  }
+
+  placeholder.classList.add('hidden');
+  canvas.classList.remove('hidden');
+  actions.classList.remove('hidden');
+  state.pfp.rendered = true;
+}
+
+function drawCircleFrame(ctx, img, S) {
+  // Decorative background pattern
+  drawBgPattern(ctx, S);
+
+  // Center photo in circle
+  const CX = S/2, CY = S/2 - 20;
+  const R = S * 0.33;
+
+  // Ornate border rings
+  // Outer glow
+  const grad = ctx.createRadialGradient(CX,CY,R*0.85,CX,CY,R*1.2);
+  grad.addColorStop(0,'rgba(245,200,0,0.6)');
+  grad.addColorStop(1,'transparent');
+  ctx.beginPath(); ctx.arc(CX,CY,R*1.18,0,Math.PI*2);
+  ctx.fillStyle=grad; ctx.fill();
+
+  // Yellow border
+  ctx.beginPath(); ctx.arc(CX,CY,R+14,0,Math.PI*2);
+  ctx.strokeStyle='#f5c800'; ctx.lineWidth=8; ctx.stroke();
+
+  // Pink inner border
+  ctx.beginPath(); ctx.arc(CX,CY,R+6,0,Math.PI*2);
+  ctx.strokeStyle='#e8198b'; ctx.lineWidth=4; ctx.stroke();
+
+  // Photo clipped to circle
+  ctx.save();
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2); ctx.clip();
+  drawCenteredImg(ctx,img,CX-R,CY-R,R*2,R*2);
+  ctx.restore();
+
+  // Dots around ring
+  drawDotRing(ctx, CX, CY, R+20, 48, '#f5c800', 4);
+
+  // Corner ornaments
+  drawCornerFloral(ctx, S);
+
+  // Bottom text banner
+  drawBottomBanner(ctx, S);
+}
+
+function drawBannerFrame(ctx, img, S) {
+  // Photo takes full square, then we overlay the frame
+  drawCenteredImg(ctx, img, 0, 0, S, S);
+
+  // Dark gradient overlay bottom
+  const gBot = ctx.createLinearGradient(0, S*0.5, 0, S);
+  gBot.addColorStop(0,'rgba(15,50,22,0)');
+  gBot.addColorStop(0.5,'rgba(15,50,22,0.55)');
+  gBot.addColorStop(1,'rgba(15,50,22,0.95)');
+  ctx.fillStyle=gBot; ctx.fillRect(0,0,S,S);
+
+  // Top gradient too
+  const gTop = ctx.createLinearGradient(0,0,0,S*0.25);
+  gTop.addColorStop(0,'rgba(15,50,22,0.8)');
+  gTop.addColorStop(1,'rgba(15,50,22,0)');
+  ctx.fillStyle=gTop; ctx.fillRect(0,0,S,S);
+
+  // Outer border - yellow
+  const bw = 22;
+  ctx.strokeStyle='#f5c800'; ctx.lineWidth=bw;
+  ctx.strokeRect(bw/2,bw/2,S-bw,S-bw);
+
+  // Inner border - pink
+  ctx.strokeStyle='#e8198b'; ctx.lineWidth=6;
+  ctx.strokeRect(bw+4,bw+4,S-bw*2-8,S-bw*2-8);
+
+  // Corner rosettes
+  drawRosette(ctx, bw+2, bw+2, 28, '#f5c800');
+  drawRosette(ctx, S-bw-2, bw+2, 28, '#f5c800');
+  drawRosette(ctx, bw+2, S-bw-2, 28, '#f5c800');
+  drawRosette(ctx, S-bw-2, S-bw-2, 28, '#f5c800');
+
+  // Side ornaments
+  drawSidePetal(ctx, S*0.5, bw/2, '#e8198b');
+  drawSidePetal(ctx, S*0.5, S-bw/2, '#e8198b');
+
+  // Bottom text
+  drawBottomBanner(ctx, S, true);
+
+  // Top label
+  ctx.font = `bold ${S*0.025}px Inter`;
+  ctx.letterSpacing = '0.2em';
+  ctx.fillStyle = 'rgba(245,200,0,0.9)';
+  ctx.textAlign = 'center';
+  ctx.fillText('GOA, INDIA · OCT 2026', S/2, bw*2.5);
+}
+
+function drawBottomBanner(ctx, S, overlay=false) {
+  const bY = S * 0.78;
+
+  // Arch shape
+  ctx.beginPath();
+  ctx.moveTo(S*0.08, bY);
+  ctx.bezierCurveTo(S*0.05, bY-30, S*0.95, bY-30, S*0.92, bY);
+  ctx.lineTo(S*0.92, S-60);
+  ctx.bezierCurveTo(S*0.9, S-40, S*0.1, S-40, S*0.08, S-60);
+  ctx.closePath();
+
+  if (!overlay) {
+    ctx.fillStyle='rgba(15,50,22,0.85)';
+    ctx.fill();
+  }
+
+  ctx.strokeStyle='rgba(245,200,0,0.7)';
+  ctx.lineWidth=3;
+  ctx.stroke();
+
+  // HACKER HOUSE text
+  ctx.font = `bold ${S*0.09}px 'Bebas Neue', sans-serif`;
+  ctx.fillStyle='#f5c800';
+  ctx.textAlign='center';
+  ctx.letterSpacing='0.1em';
+  ctx.fillText('HACKER HOUSE', S/2, bY + S*0.09);
+
+  // Devanagari गोवा
+  ctx.font = `bold ${S*0.065}px 'Noto Sans Devanagari', sans-serif`;
+
+  // Pink badge behind
+  const tw = ctx.measureText('गोवा').width;
+  const px = S/2 - tw/2 - 10;
+  roundRect(ctx, px, bY + S*0.095, tw+20, S*0.07, 10);
+  ctx.fillStyle='#e8198b';
+  ctx.fill();
+
+  ctx.fillStyle='white';
+  ctx.fillText('गोवा', S/2, bY + S*0.155);
+
+  // Date
+  ctx.font = `600 ${S*0.033}px Inter`;
+  ctx.fillStyle='rgba(245,200,0,0.9)';
+  ctx.letterSpacing='0.15em';
+  ctx.fillText('28 – 31 OCT 2026', S/2, bY + S*0.22);
+
+  // Hashtag
+  ctx.font = `500 ${S*0.025}px Inter`;
+  ctx.fillStyle='rgba(232,25,139,0.9)';
+  ctx.letterSpacing='0.05em';
+  ctx.fillText('#FrameInGoa', S/2, bY + S*0.265);
+}
+
+// ═══════════════════════════════════
+// ── ID CARD RENDERER ──
+// ═══════════════════════════════════
+function renderID() {
+  const img = state.id.img;
+  const canvas = document.getElementById('canvas-id');
+  const container = document.getElementById('canvas-container-id');
+  const placeholder = document.getElementById('placeholder-id');
+  const actions = document.getElementById('id-actions');
+
+  const name = document.getElementById('id-name').value || 'YOUR NAME';
+  const role = document.getElementById('id-role').value;
+  const building = document.getElementById('id-building').value || '—';
+  const superpower = document.getElementById('id-superpower').value || '—';
+
+  const W = 800, H = 1100;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // ── Background ──
+  ctx.fillStyle = '#1a5c2a';
+  ctx.fillRect(0,0,W,H);
+
+  drawBgPattern(ctx, W, H);
+
+  // ── Outer border ──
+  const bw = 18;
+  ctx.strokeStyle='#f5c800'; ctx.lineWidth=bw;
+  ctx.strokeRect(bw/2,bw/2,W-bw,H-bw);
+  ctx.strokeStyle='#e8198b'; ctx.lineWidth=5;
+  ctx.strokeRect(bw+4,bw+4,W-bw*2-8,H-bw*2-8);
+
+  // ── Corner rosettes ──
+  const ro = bw+2;
+  drawRosette(ctx, ro, ro, 30, '#f5c800');
+  drawRosette(ctx, W-ro, ro, 30, '#f5c800');
+  drawRosette(ctx, ro, H-ro, 30, '#f5c800');
+  drawRosette(ctx, W-ro, H-ro, 30, '#f5c800');
+
+  // ── Header area ──
+  const hdrH = 130;
+  const gHdr = ctx.createLinearGradient(0,0,0,hdrH);
+  gHdr.addColorStop(0,'rgba(10,40,18,0.95)');
+  gHdr.addColorStop(1,'rgba(10,40,18,0.2)');
+  ctx.fillStyle=gHdr;
+  ctx.fillRect(bw+5,bw+5,W-bw*2-10,hdrH);
+
+  ctx.font=`bold ${W*0.055}px 'Bebas Neue',sans-serif`;
+  ctx.fillStyle='#f5c800';
+  ctx.textAlign='center';
+  ctx.letterSpacing='0.12em';
+  ctx.fillText('HACKER HOUSE', W/2, 75);
+
+  // Devanagari inline
+  ctx.font=`bold ${W*0.045}px 'Noto Sans Devanagari',sans-serif`;
+  const hw = ctx.measureText('गोवा').width;
+  roundRect(ctx, W/2-hw/2-14, 82, hw+28, 42, 8);
+  ctx.fillStyle='#e8198b'; ctx.fill();
+  ctx.fillStyle='white';
+  ctx.fillText('गोवा', W/2, 114);
+
+  // Divider
+  drawFlowerDivider(ctx, W, 145);
+
+  // ── Photo area ──
+  const photoY = 168;
+  const photoH = 320;
+  const photoX = (W - photoH) / 2;
+
+  if (img) {
+    // Shadow behind photo
+    ctx.shadowColor='rgba(0,0,0,0.5)';
+    ctx.shadowBlur=20;
+    ctx.shadowOffsetY=8;
+
+    ctx.save();
+    roundRect(ctx, photoX, photoY, photoH, photoH, 12);
+    ctx.clip();
+    drawCenteredImg(ctx, img, photoX, photoY, photoH, photoH);
+    ctx.restore();
+
+    ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+
+    // Photo border
+    ctx.strokeStyle='#f5c800'; ctx.lineWidth=6;
+    roundRect(ctx, photoX, photoY, photoH, photoH, 12);
+    ctx.stroke();
+
+    ctx.strokeStyle='#e8198b'; ctx.lineWidth=2;
+    roundRect(ctx, photoX+5, photoY+5, photoH-10, photoH-10, 10);
+    ctx.stroke();
+  } else {
+    // Placeholder box
+    roundRect(ctx, photoX, photoY, photoH, photoH, 12);
+    ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fill();
+    ctx.strokeStyle='rgba(245,200,0,0.3)'; ctx.lineWidth=3; ctx.stroke();
+    ctx.font=`${W*0.04}px Inter`; ctx.fillStyle='rgba(255,255,255,0.3)';
+    ctx.textAlign='center';
+    ctx.fillText('📸', W/2, photoY+photoH/2+15);
+  }
+
+  // ── BUILDER ID badge ──
+  const badgeY = photoY + photoH + 24;
+  const badgeW = W - 100;
+  const badgeX = 50;
+  const badgeH = 60;
+
+  roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 8);
+  const badgeGrad = ctx.createLinearGradient(badgeX,badgeY,badgeX+badgeW,badgeY);
+  badgeGrad.addColorStop(0,'rgba(245,200,0,0.15)');
+  badgeGrad.addColorStop(0.5,'rgba(245,200,0,0.05)');
+  badgeGrad.addColorStop(1,'rgba(232,25,139,0.15)');
+  ctx.fillStyle=badgeGrad; ctx.fill();
+  ctx.strokeStyle='rgba(245,200,0,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  ctx.font=`600 ${W*0.022}px Inter`;
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.letterSpacing='0.2em';
+  ctx.textAlign='center';
+  ctx.fillText('BUILDER ID CARD', W/2, badgeY+22);
+
+  ctx.font=`bold ${W*0.026}px Inter`;
+  ctx.fillStyle='#f5c800';
+  ctx.letterSpacing='0.05em';
+  ctx.fillText('GOA 2026 · #FrameInGoa', W/2, badgeY+48);
+
+  // ── Name ──
+  const nameY = badgeY + badgeH + 62; // clear gap below badge
+  ctx.font=`bold ${W*0.09}px 'Bebas Neue',sans-serif`;
+  ctx.fillStyle='white';
+  ctx.textAlign='center';
+  ctx.letterSpacing='0.05em';
+  // Handle long names
+  const nameStr = name.toUpperCase();
+  let nameFontSize = W*0.09;
+  while (ctx.measureText(nameStr).width > W-80 && nameFontSize > W*0.04) {
+    nameFontSize -= 2;
+    ctx.font=`bold ${nameFontSize}px 'Bebas Neue',sans-serif`;
+  }
+  ctx.fillText(nameStr, W/2, nameY);
+
+  // Role pill — clear gap below name text
+  const roleY = nameY + 16;
+  ctx.font=`700 ${W*0.028}px Inter`;
+  ctx.letterSpacing='0.08em';
+  const roleW = ctx.measureText(role).width + 44;
+  const roleH = 36;
+  roundRect(ctx, W/2-roleW/2, roleY, roleW, roleH, 18);
+  ctx.fillStyle='#e8198b'; ctx.fill();
+  ctx.fillStyle='white'; ctx.textAlign='center';
+  ctx.fillText(role, W/2, roleY+25);
+
+  // ── Info rows ──
+  const infoY = roleY + roleH + 30; // proper gap below role pill
+  drawInfoRow(ctx, W, infoY,      '🔨 Building', building);
+  drawInfoRow(ctx, W, infoY+72,   '⚡ Superpower', superpower);
+
+  // ── Bottom strip ──
+  const stripY = H - 100;
+  ctx.fillStyle='rgba(10,40,18,0.85)';
+  ctx.fillRect(bw+5, stripY, W-bw*2-10, 100-bw-5);
+  drawFlowerDivider(ctx, W, stripY+2);
+
+  ctx.font=`600 ${W*0.025}px Inter`;
+  ctx.fillStyle='rgba(245,200,0,0.85)';
+  ctx.letterSpacing='0.1em';
+  ctx.textAlign='center';
+  ctx.fillText('28 – 31 OCTOBER 2026 · GOA, INDIA', W/2, stripY+40);
+
+  ctx.font=`500 ${W*0.02}px Inter`;
+  ctx.fillStyle='rgba(232,25,139,0.85)';
+  ctx.letterSpacing='0.05em';
+  ctx.fillText('#FrameInGoa · #HackerHouseGoa', W/2, stripY+66);
+
+  placeholder.classList.add('hidden');
+  canvas.classList.remove('hidden');
+
+  // fix container aspect ratio
+  container.style.maxWidth='420px';
+
+  actions.classList.remove('hidden');
+  state.id.rendered = true;
+}
+
+function drawInfoRow(ctx, W, y, label, value) {
+  const rx=55, rw=W-110, rh=54;
+  roundRect(ctx,rx,y,rw,rh,10);
+  ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fill();
+  ctx.strokeStyle='rgba(245,200,0,0.2)'; ctx.lineWidth=1; ctx.stroke();
+
+  ctx.font=`600 ${W*0.022}px Inter`;
+  ctx.fillStyle='rgba(245,200,0,0.7)';
+  ctx.letterSpacing='0.12em';
+  ctx.textAlign='left';
+  ctx.fillText(label.toUpperCase(), rx+16, y+20);
+
+  ctx.font=`500 ${W*0.03}px Inter`;
+  ctx.fillStyle='white';
+  ctx.letterSpacing='0.02em';
+  // Truncate long text
+  let val = value;
+  while (ctx.measureText(val).width > rw-32 && val.length>5) val=val.slice(0,-1);
+  if (val!==value) val+='…';
+  ctx.fillText(val, rx+16, y+42);
+}
+
+// ═══════════════════════════════════
+// ── DRAWING UTILITIES ──
+// ═══════════════════════════════════
+
+function drawCenteredImg(ctx, img, x, y, w, h) {
+  const ir = img.width / img.height;
+  const br = w / h;
+  let sx,sy,sw,sh;
+  if (ir > br) {
+    sh = img.height; sw = sh*br;
+    sx = (img.width-sw)/2; sy = 0;
+  } else {
+    sw = img.width; sh = sw/br;
+    sx = 0; sy = (img.height-sh)/2;
+  }
+  ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);
+}
+
+function drawBgPattern(ctx, W, H=W) {
+  // Subtle radial ornament repeating
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  for (let y=0; y<H; y+=90) {
+    for (let x=0; x<W; x+=90) {
+      drawSmallFlower(ctx, x+45, y+45, 18, '#f5c800');
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawSmallFlower(ctx, cx, cy, r, color) {
+  ctx.fillStyle = color;
+  for (let i=0;i<6;i++) {
+    const a = i*Math.PI/3;
+    ctx.beginPath();
+    ctx.ellipse(cx+r*0.5*Math.cos(a), cy+r*0.5*Math.sin(a), r*0.35, r*0.2, a, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.beginPath(); ctx.arc(cx,cy,r*0.25,0,Math.PI*2); ctx.fill();
+}
+
+function drawCornerFloral(ctx, S) {
+  const positions = [[0,0],[S,0],[0,S],[S,S]];
+  positions.forEach(([x,y]) => {
+    ctx.save();
+    ctx.translate(x,y);
+    const ang = x===0&&y===0?0 : x>0&&y===0?Math.PI/2 : x===0&&y>0?-Math.PI/2 : Math.PI;
+    ctx.rotate(ang);
+    drawCornerPetal(ctx);
+    ctx.restore();
+  });
+}
+
+function drawCornerPetal(ctx) {
+  // Leaf/petal pointing inward from corner
+  ctx.fillStyle='rgba(232,25,139,0.8)';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.bezierCurveTo(40,0,60,30,40,60);
+  ctx.bezierCurveTo(20,40,0,30,0,0);
+  ctx.fill();
+
+  ctx.fillStyle='rgba(245,200,0,0.9)';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.bezierCurveTo(25,0,40,20,28,42);
+  ctx.bezierCurveTo(14,28,0,18,0,0);
+  ctx.fill();
+}
+
+function drawRosette(ctx, cx, cy, r, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  for (let i=0;i<8;i++) {
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(i*Math.PI/4);
+    ctx.beginPath();
+    ctx.ellipse(0,-r*0.55,r*0.22,r*0.45,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(cx,cy,r*0.28,0,Math.PI*2);
+  ctx.fillStyle='#e8198b'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,r*0.13,0,Math.PI*2);
+  ctx.fillStyle='white'; ctx.fill();
+  ctx.restore();
+}
+
+function drawSidePetal(ctx, cx, cy, color) {
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.ellipse(0,0,22,10,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawDotRing(ctx, cx, cy, r, n, color, dotR) {
+  ctx.fillStyle=color;
+  for (let i=0;i<n;i++) {
+    const a=i*(Math.PI*2/n);
+    ctx.beginPath();
+    ctx.arc(cx+r*Math.cos(a), cy+r*Math.sin(a), dotR, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function drawFlowerDivider(ctx, W, y) {
+  ctx.strokeStyle='rgba(245,200,0,0.4)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(55,y); ctx.lineTo(W-55,y); ctx.stroke();
+  for (let x=90; x<W-90; x+=60) {
+    drawSmallFlower(ctx, x, y, 6, 'rgba(245,200,0,0.5)');
+  }
+  drawRosette(ctx,55,y,8,'rgba(232,25,139,0.6)');
+  drawRosette(ctx,W-55,y,8,'rgba(232,25,139,0.6)');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+// ═══════════════════════════════════
+// ── DOWNLOAD & SHARE ──
+// ═══════════════════════════════════
+
+function downloadCanvas(type) {
+  const canvas = document.getElementById('canvas-'+type);
+  if (!state[type].rendered) { showToast('Generate your image first!'); return; }
+  const link = document.createElement('a');
+  link.download = `HH-Goa-2026-${type==='pfp'?'Frame':'ID-Card'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('Downloading your image! 🎉');
+}
+
+function shareToX(type) {
+  const canvas = document.getElementById('canvas-'+type);
+  if (!state[type].rendered) { showToast('Generate your image first!'); return; }
+
+  const caption = type==='pfp'
+    ? `I'm heading to Hacker House Goa 2026! 🌴 Join 300+ builders in Goa this October. #FrameInGoa #HackerHouseGoa`
+    : `Builder ID unlocked 🔓 See you at Hacker House Goa — 28-31 Oct 2026! 🌴 #FrameInGoa #HackerHouseGoa`;
+
+  // Download first, then open X
+  const link = document.createElement('a');
+  link.download = `HH-Goa-2026-${type==='pfp'?'Frame':'ID-Card'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+
+  setTimeout(() => {
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(caption)}`;
+    window.open(url, '_blank');
+    showToast('Image downloaded — attach it to your tweet! 🐦');
+  }, 800);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ── Init canvas containers ──
+document.getElementById('canvas-container').style.cssText = 'background:#1a5c2a;border-radius:1rem;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 2px rgba(245,200,0,0.3);';
+document.getElementById('canvas-container-id').style.cssText = 'background:#1a5c2a;border-radius:1rem;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 2px rgba(245,200,0,0.3);width:100%;max-width:420px;';
+</script>
+</body>
+</html>
